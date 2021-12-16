@@ -33,3 +33,19 @@ jobs:
 
       - name: Run chart-testing (lint)
         run: ct lint --config .chart-testing.yaml
+        # TODO remove the --chart-dirs option
+        # added as a workaround for https://github.com/helm/chart-testing/issues/364
+        run: ct lint --config .chart-testing.yaml --chart-dirs charts/
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.2.0
+        if: steps.list-changed.outputs.changed == 'true'
+
+      - name: Install Tekton
+        run: |
+          kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.28.2/release.notags.yaml
+          kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/previous/v0.16.1/release.yaml
+          kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/previous/v0.16.1/interceptors.yaml
+
+      - name: Run chart-testing (install)
+        run: ct install --config .chart-testing.yaml
