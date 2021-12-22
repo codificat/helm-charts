@@ -16,9 +16,18 @@ jobs:
         with:
           version: v3.4.0
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
+      - name: Set up podman
+        run: |
+          source /etc/os-release
+          echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+          curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Set up oc client
+        run: |
+          wget https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz
+          sudo tar xzvf oc.tar.gz oc.tar.gz -C /usr/local/bin
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.1.0
@@ -33,19 +42,30 @@ jobs:
 
       - name: Run chart-testing (lint)
         run: ct lint --config .chart-testing.yaml
-        # TODO remove the --chart-dirs option
-        # added as a workaround for https://github.com/helm/chart-testing/issues/364
-        run: ct lint --config .chart-testing.yaml --chart-dirs charts/
 
-      - name: Create kind cluster
-        uses: helm/kind-action@v1.2.0
+      - name: Run a microshift cluster
         if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          sudo podman run -d --rm --name microshift --privileged -v microshift-data:/var/lib -p 6443:6443 quay.io/microshift/microshift-aio:latest
+          mkdir ${HOME}/.kube
+          sudo podman cp microshift:/var/lib/microshift/resources/kubeadmin/kubeconfig ${HOME}/.kube/config
+          sudo chown ${USER} ${HOME}/.kube/config
+          chmod 600 ${HOME}/.kube/config
 
       - name: Install Tekton
+        if: steps.list-changed.outputs.changed == 'true'
         run: |
           kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.28.2/release.notags.yaml
           kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/previous/v0.16.1/release.yaml
           kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/previous/v0.16.1/interceptors.yaml
+
+      - name: Install prometheus
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+          helm install --create-namespace --namespace metrics \
+               prometheus-stack prometheus-community/kube-prometheus-stack
 
       - name: Run chart-testing (install)
         run: ct install --config .chart-testing.yaml
