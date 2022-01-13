@@ -6,7 +6,7 @@ metadata:
   name: aicoe-ci-listener
   labels: {{- include "meteor-pipelines.labels" . | nindent 4 }}
 spec:
-  serviceAccountName: aicoe-ci-webhook
+  serviceAccountName: pipeline
   triggers:
     - name: github-pull-request-model
       interceptors:
