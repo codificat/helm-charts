@@ -3,9 +3,9 @@ entries:
   meteor-pipelines:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2021-12-16T23:22:06.565299175Z"
+    created: "2022-02-04T13:56:11.522973901Z"
     description: a set of Tekton pipelines
-    digest: 7786132d0d5d9ca53fa2bc4de05ed5af5a64825741a2e5674fbdb3324b4cde1f
+    digest: 2b4ac4a9de9139588e1697174fc0bdb05ccbd9894b234901c0c3c303c1ebfc85
     icon: https://avatars.githubusercontent.com/u/33906690?v=4
     keywords:
     - AICoE
@@ -22,6 +22,6 @@ entries:
     - https://github.com/AICoE/aicoe-ci
     type: application
     urls:
-    - https://github.com/codificat/helm-charts/releases/download/meteor-pipelines-0.2.2/meteor-pipelines-0.2.2.tgz
-    version: 0.2.2
-generated: "2021-12-16T23:22:06.337016327Z"
+    - https://github.com/codificat/helm-charts/releases/download/meteor-pipelines-0.2.5/meteor-pipelines-0.2.5.tgz
+    version: 0.2.5
+generated: "2022-02-04T13:56:11.267168031Z"
