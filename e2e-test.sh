@@ -2,7 +2,7 @@
 
 # TEST-ENV: bring up a cluster
 sudo podman run -d --rm --name microshift --privileged \
-     -v microshift-data:/var/lib -p 6443:6443 \
+     -v microshift-data:/var/lib -p 6443:6443 -p 80:80 -p 443:443 \
      quay.io/microshift/microshift-aio:latest
 sudo podman exec microshift bash -c \
      'while ! test -f "/var/lib/microshift/resources/kubeadmin/kubeconfig"; do
